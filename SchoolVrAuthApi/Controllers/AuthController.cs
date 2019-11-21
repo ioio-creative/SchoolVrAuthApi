@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
+using SchoolVrAuthApi.Models;
+using SchoolVrAuthApi.Utilities.DateTimeUtils;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SchoolVrAuthApi.Models;
 
 namespace SchoolVrAuthApi.Controllers
 {
@@ -204,7 +201,8 @@ namespace SchoolVrAuthApi.Controllers
             MacAddress newMacAddress = new MacAddress
             {
                 MacAddressId = newMacAddressId,
-                AssignedDt = DateTime.Now,
+                //AssignedDt = DateTime.Now,
+                AssignedDt = DateTimeWithZone.Now,
 
                 LicenseKeyId = associatedLicenseKeyId,
                 LicenseKey = licenseKeyFromDb
