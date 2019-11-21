@@ -22,7 +22,8 @@ namespace SchoolVrAuthApi.Migrations
             modelBuilder.Entity("SchoolVrAuthApi.Models.LicenseKey", b =>
                 {
                     b.Property<string>("LicenseKeyId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(25)");
 
                     b.Property<bool>("IsActive");
 
@@ -40,9 +41,11 @@ namespace SchoolVrAuthApi.Migrations
             modelBuilder.Entity("SchoolVrAuthApi.Models.MacAddress", b =>
                 {
                     b.Property<string>("MacAddressId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(25)");
 
-                    b.Property<DateTime>("AssignedDt");
+                    b.Property<DateTime?>("AssignedDt")
+                        .HasColumnType("smalldatetime");
 
                     b.Property<string>("LicenseKeyId");
 
@@ -56,9 +59,11 @@ namespace SchoolVrAuthApi.Migrations
             modelBuilder.Entity("SchoolVrAuthApi.Models.User", b =>
                 {
                     b.Property<string>("UserId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(25)");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("UserId");
 

@@ -11,8 +11,8 @@ namespace SchoolVrAuthApi.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(nullable: false),
-                    Name = table.Column<string>(nullable: true)
+                    UserId = table.Column<string>(type: "varchar(25)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -23,7 +23,7 @@ namespace SchoolVrAuthApi.Migrations
                 name: "LicenseKeys",
                 columns: table => new
                 {
-                    LicenseKeyId = table.Column<string>(nullable: false),
+                    LicenseKeyId = table.Column<string>(type: "varchar(25)", nullable: false),
                     IsActive = table.Column<bool>(nullable: false),
                     NumOfMacAddressesAllowed = table.Column<int>(nullable: false),
                     UserId = table.Column<string>(nullable: true)
@@ -43,8 +43,8 @@ namespace SchoolVrAuthApi.Migrations
                 name: "MacAddresses",
                 columns: table => new
                 {
-                    MacAddressId = table.Column<string>(nullable: false),
-                    AssignedDt = table.Column<DateTime>(nullable: false),
+                    MacAddressId = table.Column<string>(type: "varchar(25)", nullable: false),
+                    AssignedDt = table.Column<DateTime>(type: "smalldatetime", nullable: true),
                     LicenseKeyId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>

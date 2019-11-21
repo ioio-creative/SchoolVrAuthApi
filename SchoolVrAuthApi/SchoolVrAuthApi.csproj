@@ -5,6 +5,16 @@
     <AWSProjectType>Lambda</AWSProjectType>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Migrations\20191121090511_InitialCreate3.cs" />
+    <Compile Remove="Migrations\20191121090511_InitialCreate3.Designer.cs" />
+    <Compile Remove="Migrations\20191121091649_InitialCreate3.cs" />
+    <Compile Remove="Migrations\20191121091649_InitialCreate3.Designer.cs" />
+    <Compile Remove="Migrations\20191121094111_InitialCreate4.cs" />
+    <Compile Remove="Migrations\20191121094111_InitialCreate4.Designer.cs" />
+    <Compile Remove="Migrations\20191121100949_InitialCrate.cs" />
+    <Compile Remove="Migrations\20191121100949_InitialCrate.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="AWSSDK.S3" Version="3.3.102.15" />
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.100.1" />

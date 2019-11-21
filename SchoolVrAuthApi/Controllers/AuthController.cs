@@ -37,23 +37,23 @@ namespace SchoolVrAuthApi.Controllers
         //}
 
         //// GET: api/Auth/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetMacAddress([FromRoute] string id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetMacAddress([FromRoute] string id)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var macAddress = await _context.MacAddresses.FindAsync(id);
+        //    var macAddress = await _context.MacAddresses.FindAsync(id);
 
-            if (macAddress == null)
-            {
-                return NotFound();
-            }
+        //    if (macAddress == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return Ok(macAddress);
-        }
+        //    return Ok(macAddress);
+        //}
 
         //// PUT: api/Auth/5
         //[HttpPut("{id}")]
