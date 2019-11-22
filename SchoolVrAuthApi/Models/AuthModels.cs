@@ -8,8 +8,12 @@ namespace SchoolVrAuthApi.Models
     // https://www.meziantou.net/entity-framework-core-specifying-data-type-length-and-precision.htm
     public class Constants
     {
+        public const int DefaultIdStringMaxLength = 25;
         public const string DefaultIdStringType = "varchar(25)";
+
+        public const int DefaultNameStringMaxLength = 50;
         public const string DefaultNameStringType = "nvarchar(50)";
+        
         public const string DefaultDateTimeType = "smalldatetime";
     }
 
