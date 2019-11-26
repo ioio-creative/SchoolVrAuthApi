@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SchoolVrAuthApi.Exceptions;
 using SchoolVrAuthApi.Utilities;
+using System.Threading.Tasks;
 
 namespace SchoolVrAuthApi.Controllers
 {
@@ -19,14 +20,21 @@ namespace SchoolVrAuthApi.Controllers
         }
 
         [Route("")]
-        public IActionResult DefaultErrorHandler()
+        public async Task<IActionResult> DefaultErrorHandler()
         {
             var exceptionHandlerPathFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
 
             if (exceptionHandlerPathFeature != null && exceptionHandlerPathFeature.Error != null)
             {
-                ExceptionUtils.NotifySystemOps(exceptionHandlerPathFeature.Error,
-                    _httpContext);
+                try
+                {
+                    await ExceptionUtils.NotifySystemOps(exceptionHandlerPathFeature.Error,
+                        _httpContext);
+                }
+                catch
+                {
+                    // silence error
+                }
 
                 if (exceptionHandlerPathFeature.Error is ModelStateInvalidException)
                 {

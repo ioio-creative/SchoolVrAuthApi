@@ -2,9 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
+
+using MailKit.Net.Smtp;
+using MailKit;
+using MimeKit;
 
 namespace SchoolVrAuthApi.Utilities
 {
@@ -16,35 +19,15 @@ namespace SchoolVrAuthApi.Utilities
         private const string SmtpPassword = "EKWaVG54";
         private const bool SmtpIsEnableSsl = true;
 
-        private const string ErrMsgFromAddr = @"SchoolVrAuthApi Error <smtpclient2.ioio @gmail.com>";
+        private const string ErrMsgFromName = "SchoolVrAuthApi";
+        private const string ErrMsgFromAddr = "smtpclient2.ioio @gmail.com";
 
-        private static SmtpClient GetNewSmtpClient()
+    
+        private static void AddMultipleRecipientsToMailMessage(MimeMessage mimeMessage, IEnumerable<string> receiverAddrs)
         {
-            NetworkCredential credential = new NetworkCredential()
+            foreach (var receiverAddr in receiverAddrs)
             {
-                UserName = SmtpUserName,
-                Password = SmtpPassword
-            };
-
-            return new SmtpClient()
-            {
-                Credentials = credential,
-                Host = SmtpHost,
-                Port = SmtpPort,
-                EnableSsl = SmtpIsEnableSsl
-
-                // The following statement does not get credentials
-                // from web.config
-                // Hence, it's completely wrong
-                //smtp.UseDefaultCredentials = true;
-            };
-        }
-
-        private static void AddMultipleRecipientsToMailMessage(MailMessage mailMessage, IEnumerable<string> receiverAddrs)
-        {
-            foreach (string receiverAddr in receiverAddrs)
-            {
-                mailMessage.To.Add(receiverAddr);
+                mimeMessage.To.Add(new MailboxAddress(receiverAddr));
             }
         }
 
@@ -90,19 +73,32 @@ namespace SchoolVrAuthApi.Utilities
 
             try
             {
-                using (MailMessage message = new MailMessage())
-                {
-                    message.From = new MailAddress(ErrMsgFromAddr);
-                    AddMultipleRecipientsToMailMessage(message, receiverAddrs);
-                    message.Subject = "SchoolVrAuthApi Exception";
-                    message.Body = messageBody;
-                    message.IsBodyHtml = false;
+                // https://github.com/jstedfast/MailKit
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(ErrMsgFromName, ErrMsgFromAddr));
+                AddMultipleRecipientsToMailMessage(message, receiverAddrs);
+                message.Subject = "SchoolVrAuthApi Exception";
 
-                    using (SmtpClient smtp = GetNewSmtpClient())
-                    {
-                        await smtp.SendMailAsync(message);
-                    }
+                message.Body = new TextPart("plain")
+                {
+                    Text = messageBody
+                };
+
+                using (var client = new SmtpClient())
+                {
+                    // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
+                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+                    await client.ConnectAsync(SmtpHost, SmtpPort, false);
+
+                    // Note: only needed if the SMTP server requires authentication
+                    await client.AuthenticateAsync(SmtpUserName, SmtpPassword);
+
+                    await client.SendAsync(message);
+                    
+                    await client.DisconnectAsync(true);
                 }
+                
             }
             catch (Exception ex)
             {
