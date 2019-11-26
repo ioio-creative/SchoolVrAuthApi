@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using SchoolVrAuthApi.Exceptions;
 using SchoolVrAuthApi.Models;
 using SchoolVrAuthApi.Utilities.DateTimeUtils;
 using System.Linq;
@@ -19,18 +21,21 @@ namespace SchoolVrAuthApi.Controllers
         }
 
 
-        private readonly AuthContext _context;
+        private readonly AuthContext _dbContext;
+        private readonly IHttpContextAccessor _httpContext;
 
-        public AuthController(AuthContext context)
+        // https://stackoverflow.com/questions/51116403/how-to-get-client-ip-address-in-asp-net-core-2-1/51245326
+        public AuthController(AuthContext dbContext, IHttpContextAccessor httpContext)
         {
-            _context = context;
+            _dbContext = dbContext;
+            _httpContext = httpContext;
         }
 
         //// GET: api/Auth
         //[HttpGet]
         //public IEnumerable<MacAddress> GetMacAddresses()
         //{
-        //    return _context.MacAddresses;
+        //    return _dbContext.MacAddresses;
         //}
 
         //// GET: api/Auth/5
@@ -42,7 +47,7 @@ namespace SchoolVrAuthApi.Controllers
         //        return BadRequest(ModelState);
         //    }
 
-        //    var macAddress = await _context.MacAddresses.FindAsync(id);
+        //    var macAddress = await _dbContext.MacAddresses.FindAsync(id);
 
         //    if (macAddress == null)
         //    {
@@ -66,11 +71,11 @@ namespace SchoolVrAuthApi.Controllers
         //        return BadRequest();
         //    }
 
-        //    _context.Entry(macAddress).State = EntityState.Modified;
+        //    _dbContext.Entry(macAddress).State = EntityState.Modified;
 
         //    try
         //    {
-        //        await _context.SaveChangesAsync();
+        //        await _dbContext.SaveChangesAsync();
         //    }
         //    catch (DbUpdateConcurrencyException)
         //    {
@@ -96,8 +101,8 @@ namespace SchoolVrAuthApi.Controllers
         //        return BadRequest(ModelState);
         //    }
 
-        //    _context.MacAddresses.Add(macAddress);
-        //    await _context.SaveChangesAsync();
+        //    _dbContext.MacAddresses.Add(macAddress);
+        //    await _dbContext.SaveChangesAsync();
 
         //    return CreatedAtAction("GetMacAddress", new { id = macAddress.MacAddressId }, macAddress);
         //}
@@ -111,37 +116,36 @@ namespace SchoolVrAuthApi.Controllers
         //        return BadRequest(ModelState);
         //    }
 
-        //    var macAddress = await _context.MacAddresses.FindAsync(id);
+        //    var macAddress = await _dbContext.MacAddresses.FindAsync(id);
         //    if (macAddress == null)
         //    {
         //        return NotFound();
         //    }
 
-        //    _context.MacAddresses.Remove(macAddress);
-        //    await _context.SaveChangesAsync();
+        //    _dbContext.MacAddresses.Remove(macAddress);
+        //    await _dbContext.SaveChangesAsync();
 
         //    return Ok(macAddress);
         //}
 
         private bool MacAddressExists(string id)
         {
-            return _context.MacAddresses.Any(e => e.MacAddressId == id);
+            return _dbContext.MacAddresses.Any(e => e.MacAddressId == id);
         }
 
 
         // POST: api/[controller]/authenticatelicense
         [HttpPost("authenticatelicense")]
-        public async Task<IActionResult> AuthenticateLicense([FromBody] AuthRequestBody authRequestBody)
+        public async Task<IActionResult> AuthenticateLicense([FromBody][Bind("ApiAuthCode", "LicenseKey", "MacAddress")] AuthRequestBody authRequestBody)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                throw new ModelStateInvalidException(authRequestBody as object, ModelState);                
             }
 
             if (!IsAuthorised(authRequestBody.ApiAuthCode))
             {
-                // 401
-                return Unauthorized();
+                throw AuthCodeFailException.AuthCodeFailExceptionFactory(authRequestBody.ApiAuthCode);                
             }
 
             var authResponseBody = new AuthResponseBody
@@ -151,17 +155,22 @@ namespace SchoolVrAuthApi.Controllers
 
             authRequestBody.MacAddress = NormalizeMacAddress(authRequestBody.MacAddress);
 
-            var macAddressFromDb = await _context.MacAddresses.FindAsync(authRequestBody.MacAddress);
+            var macAddressFromDb = await _dbContext.MacAddresses.FindAsync(authRequestBody.MacAddress);
     
             if (macAddressFromDb != null)
             {
-                _context.MacAddresses.Remove(macAddressFromDb);
+                _dbContext.MacAddresses.Remove(macAddressFromDb);
                 // save changes so that it won't affect licenseKeyFromDb.NumOfMacAddressesAllowed check later
-                await _context.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
             }
 
             authResponseBody.IsAuthenticated = await AddNewMacAddressAsync(authRequestBody.MacAddress, authRequestBody.LicenseKey);
-            await _context.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
+
+            if (!authResponseBody.IsAuthenticated)
+            {
+                throw new AuthenticateLicenseFailException(authResponseBody);
+            }
 
             return Ok(authResponseBody);
         }
@@ -177,7 +186,7 @@ namespace SchoolVrAuthApi.Controllers
         // return bool isAuthenticated
         private async Task<bool> AddNewMacAddressAsync(string newMacAddressId, string associatedLicenseKeyId)
         {
-            var licenseKeyFromDb = await _context.LicenseKeys.FindAsync(associatedLicenseKeyId);
+            var licenseKeyFromDb = await _dbContext.LicenseKeys.FindAsync(associatedLicenseKeyId);
 
             if (licenseKeyFromDb == null || !licenseKeyFromDb.IsActive)
             {
@@ -207,7 +216,7 @@ namespace SchoolVrAuthApi.Controllers
                 LicenseKeyId = associatedLicenseKeyId,
                 LicenseKey = licenseKeyFromDb
             };
-            await _context.MacAddresses.AddAsync(newMacAddress);            
+            await _dbContext.MacAddresses.AddAsync(newMacAddress);            
 
             // accept
             return true;

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +28,9 @@ namespace SchoolVrAuthApi
 
             var connectionString = Configuration.GetValue<string>(DefaultConnectionStringKey);
             services.AddDbContext<AuthContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(connectionString));
+
+            // https://stackoverflow.com/questions/51116403/how-to-get-client-ip-address-in-asp-net-core-2-1/51245326
+            services.AddHttpContextAccessor();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
@@ -34,11 +38,15 @@ namespace SchoolVrAuthApi
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                //app.UseDeveloperExceptionPage();
+                
+                app.UseExceptionHandler("/api/error");
             }
             else
             {
                 app.UseHsts();
+                
+                app.UseExceptionHandler("/api/error");
             }
 
             app.UseHttpsRedirection();
