@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Http;
+using MimeKit;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-
-using MailKit.Net.Smtp;
-using MailKit;
-using MimeKit;
 
 namespace SchoolVrAuthApi.Utilities
 {
@@ -17,7 +14,7 @@ namespace SchoolVrAuthApi.Utilities
         private const int SmtpPort = 587;
         private const string SmtpUserName = "smtpclient2.ioio@gmail.com";
         private const string SmtpPassword = "EKWaVG54";
-        private const bool SmtpIsEnableSsl = true;
+        private const bool SmtpIsEnableSsl = false;
 
         private const string ErrMsgFromName = "SchoolVrAuthApi";
         private const string ErrMsgFromAddr = "smtpclient2.ioio @gmail.com";
@@ -89,7 +86,7 @@ namespace SchoolVrAuthApi.Utilities
                     // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
                     client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                    await client.ConnectAsync(SmtpHost, SmtpPort, false);
+                    await client.ConnectAsync(SmtpHost, SmtpPort, SmtpIsEnableSsl);
 
                     // Note: only needed if the SMTP server requires authentication
                     await client.AuthenticateAsync(SmtpUserName, SmtpPassword);
