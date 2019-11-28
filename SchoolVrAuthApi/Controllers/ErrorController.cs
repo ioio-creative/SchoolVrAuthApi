@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SchoolVrAuthApi.Exceptions;
+using SchoolVrAuthApi.Models;
 using SchoolVrAuthApi.Utilities;
+using System;
 using System.Threading.Tasks;
 
 namespace SchoolVrAuthApi.Controllers
@@ -11,7 +13,7 @@ namespace SchoolVrAuthApi.Controllers
     [ApiController]
     public class ErrorController : ControllerBase
     {
-        private readonly IHttpContextAccessor _httpContext;
+        private readonly IHttpContextAccessor _httpContext;        
 
         // https://stackoverflow.com/questions/51116403/how-to-get-client-ip-address-in-asp-net-core-2-1/51245326
         public ErrorController(IHttpContextAccessor httpContext)
@@ -26,14 +28,17 @@ namespace SchoolVrAuthApi.Controllers
 
             if (exceptionHandlerPathFeature != null && exceptionHandlerPathFeature.Error != null)
             {
+                string emailNotificationErrMsg = "";
+
                 try
                 {
                     await ExceptionUtils.NotifySystemOps(exceptionHandlerPathFeature.Error,
                         _httpContext);
                 }
-                catch
+                catch (Exception exc)
                 {
                     // silence error
+                    emailNotificationErrMsg = exc.ToString();
                 }
 
                 if (exceptionHandlerPathFeature.Error is ModelStateInvalidException)
@@ -48,7 +53,10 @@ namespace SchoolVrAuthApi.Controllers
 
                 if (exceptionHandlerPathFeature.Error is AuthenticateLicenseFailException)
                 {
-                    return Ok((exceptionHandlerPathFeature.Error as AuthenticateLicenseFailException).AuthResponse);
+                    AuthResponseBody authResponseBody = (exceptionHandlerPathFeature.Error as AuthenticateLicenseFailException).AuthResponse;
+                    // for testing sending email at production server
+                    authResponseBody.EmailNotificationErrMsg = emailNotificationErrMsg;
+                    return Ok(authResponseBody);
                 }
             }
 

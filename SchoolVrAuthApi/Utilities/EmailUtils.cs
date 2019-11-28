@@ -12,12 +12,12 @@ namespace SchoolVrAuthApi.Utilities
     {
         private const string SmtpHost = "smtp.gmail.com";
         private const int SmtpPort = 587;
-        private const string SmtpUserName = "smtpclient2.ioio@gmail.com";
-        private const string SmtpPassword = "EKWaVG54";
-        private const bool SmtpIsEnableSsl = false;
+        private const string SmtpUserName = "smtpclient.ioio@gmail.com";
+        private const string SmtpPassword = "tWcYbvKu";
+        private const bool SmtpEnableSsl = false;
 
         private const string ErrMsgFromName = "SchoolVrAuthApi";
-        private const string ErrMsgFromAddr = "smtpclient2.ioio @gmail.com";
+        private const string ErrMsgFromAddr = SmtpUserName;
 
     
         private static void AddMultipleRecipientsToMailMessage(MimeMessage mimeMessage, IEnumerable<string> receiverAddrs)
@@ -68,8 +68,8 @@ namespace SchoolVrAuthApi.Utilities
             }
             string messageBody = MessageBodyBuilder.ToString();
 
-            try
-            {
+            //try
+            //{
                 // https://github.com/jstedfast/MailKit
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress(ErrMsgFromName, ErrMsgFromAddr));
@@ -86,7 +86,7 @@ namespace SchoolVrAuthApi.Utilities
                     // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
                     client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                    await client.ConnectAsync(SmtpHost, SmtpPort, SmtpIsEnableSsl);
+                    await client.ConnectAsync(SmtpHost, SmtpPort);
 
                     // Note: only needed if the SMTP server requires authentication
                     await client.AuthenticateAsync(SmtpUserName, SmtpPassword);
@@ -94,15 +94,14 @@ namespace SchoolVrAuthApi.Utilities
                     await client.SendAsync(message);
                     
                     await client.DisconnectAsync(true);
-                }
-                
-            }
-            catch (Exception ex)
-            {
-                // TODO: Silence exception when sending email?
-                Console.WriteLine("Could not send internal error notification e-mail." + Environment.NewLine +
-                    "Exception caught: " + ex);
-            }
+                }                
+            //}
+            //catch (Exception ex)
+            //{
+            //    // TODO: Silence exception when sending email?
+            //    Console.WriteLine("Could not send internal error notification e-mail." + Environment.NewLine +
+            //        "Exception caught: " + ex);
+            //}
         }
     }
 }

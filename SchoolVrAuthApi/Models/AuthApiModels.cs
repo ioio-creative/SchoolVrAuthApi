@@ -18,5 +18,7 @@ namespace SchoolVrAuthApi.Models
     public class AuthResponseBody
     {
         public bool IsAuthenticated { get; set; }
+        // for testing sending email at production server
+        public string EmailNotificationErrMsg { get; set; }
     }
 }
