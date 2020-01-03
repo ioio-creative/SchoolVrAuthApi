@@ -1,6 +1,7 @@
 ﻿using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Http;
 using MimeKit;
+using SchoolVrAuthApi.Utilities.DateTimeUtils;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,16 +11,20 @@ namespace SchoolVrAuthApi.Utilities
 {
     public class EmailUtils
     {
-        private const string SmtpHost = "smtp.gmail.com";
+        //private const string SmtpHost = "smtp.gmail.com";
+        private const string SmtpHost = "email-smtp.ap-south-1.amazonaws.com";
         private const int SmtpPort = 587;
-        private const string SmtpUserName = "smtpclient.ioio@gmail.com";
-        private const string SmtpPassword = "tWcYbvKu";
+        //private const string SmtpUserName = "smtpclient.ioio@gmail.com";
+        private const string SmtpUserName = "AKIASOOACCKD5FZKWL7X";
+        //private const string SmtpPassword = "tWcYbvKu";
+        private const string SmtpPassword = "BIcar2JRCf1azyyHtSW3vuuCRELWYUxm/qDpTkJ2XvY1";
         private const bool SmtpEnableSsl = false;
 
         private const string ErrMsgFromName = "SchoolVrAuthApi";
-        private const string ErrMsgFromAddr = SmtpUserName;
+        //private const string ErrMsgFromAddr = SmtpUserName;
+        private const string ErrMsgFromAddr = "smtpclient.ioio@gmail.com";
 
-    
+
         private static void AddMultipleRecipientsToMailMessage(MimeMessage mimeMessage, IEnumerable<string> receiverAddrs)
         {
             foreach (var receiverAddr in receiverAddrs)
@@ -36,7 +41,7 @@ namespace SchoolVrAuthApi.Utilities
         public async static Task SendInternalErrorNotificationAsync(IEnumerable<string> receiverAddrs, Exception exc, IHttpContextAccessor httpContextAccessor)
         {
             StringBuilder MessageBodyBuilder = new StringBuilder();
-            MessageBodyBuilder.AppendFormat("********** {0} **********", DateTime.Now);
+            MessageBodyBuilder.AppendFormat("********** {0} **********", DateTimeWithZone.Now);
             MessageBodyBuilder.AppendLine("");
             MessageBodyBuilder.Append("Client IP Address: ");
             // https://stackoverflow.com/questions/51116403/how-to-get-client-ip-address-in-asp-net-core-2-1/51245326
@@ -86,7 +91,7 @@ namespace SchoolVrAuthApi.Utilities
                     // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
                     client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                    await client.ConnectAsync(SmtpHost, SmtpPort);
+                    await client.ConnectAsync(SmtpHost, SmtpPort, SmtpEnableSsl);
 
                     // Note: only needed if the SMTP server requires authentication
                     await client.AuthenticateAsync(SmtpUserName, SmtpPassword);
